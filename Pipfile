@@ -9,6 +9,7 @@ cached-property = "*"
 
 [dev-packages]
 pytest = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.5"
