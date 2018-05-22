@@ -15,6 +15,8 @@ from Crypto.Signature import PKCS1_v1_5
 
 from cached_property import cached_property
 
+from .base import Base
+
 
 def generate_keypair(bits=2048):
     """
@@ -44,7 +46,7 @@ def new_wallet(private_key=None, bits=2048):
     return Wallet(private_key=private_key)
 
 
-class Wallet:
+class Wallet(Base):
     """
     Base wallet implementation that exposes the ability for the client to sign a transaction (or message) using
     `sign_transaction()` and to generate a transaction using `generate_transaction()`
@@ -59,16 +61,6 @@ class Wallet:
         self.private_key = private_key
         self.rsa_private_key = RSA.importKey(binascii.unhexlify(private_key))
 
-    @staticmethod
-    def _transaction_str(transaction):
-        """
-        Generates an ordered string of the transaction being created for signing.
-        :param transaction: transaction dict
-        :ptype transaction: dict
-        :return:
-        """
-        return json.dumps(transaction, sort_keys=True)
-
     def sign_transaction(self, **transaction):
         """
         Signs a transaction with the user's private key and returns a key for signing.
@@ -76,7 +68,7 @@ class Wallet:
         :rtype: str
         """
         signer = PKCS1_v1_5.new(self.rsa_private_key)
-        h = SHA.new(self._transaction_str(transaction).encode('utf8'))
+        h = SHA.new(self._json_str(**transaction).encode('utf8'))
         return binascii.hexlify(signer.sign(h)).decode('ascii')
 
     def generate_transaction(self, **transaction):
@@ -86,7 +78,9 @@ class Wallet:
         :return: transaction with signature
         :rtype: dict
         """
-        return {'transaction': transaction, 'signature': self.sign_transaction(**transaction)}
+        return {'transaction': transaction,
+                'signature': self.sign_transaction(**transaction),
+                'public_key': self.public_key}
 
     @cached_property
     def public_key(self):

@@ -3,6 +3,15 @@ from datetime import datetime
 import json
 from collections import OrderedDict
 
+import Crypto
+import Crypto.Random
+from Crypto.Hash import SHA
+from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+
+import binascii
+
+from .base import Base
 
 DEFAULT_HASH = 'sha256'
 
@@ -15,8 +24,9 @@ class BlockChainVerificationError(Exception):
     pass
 
 
-class Block(object):
+class Block(Base):
     _hash = DEFAULT_HASH
+    _required_transaction_keys = ['public_key', 'signature', 'transaction']
 
     def __init__(self,
                  transaction=None,
@@ -28,6 +38,7 @@ class Block(object):
         """
         super(Block, self).__init__()
         self.transaction = transaction
+        self.verify_transaction()
         self.previous_hash = previous_hash
         self.timestamp = str(datetime.timestamp(datetime.now()).as_integer_ratio()[0]).encode('utf-8')
         self.hash = self.hash_block()
@@ -57,8 +68,36 @@ class Block(object):
         if self.hash != self.hash_block():
             raise BlockVerificationError('Unable to verify hash for {}'.format(self))
 
+    def verify_transaction(self):
+        """
+        Verifies that the transaction is valid.  If not, raises `BlockVerificationError`
 
-class BlockChain(object):
+        :return: None
+        :raises: BlockVerificationError
+        """
+        for key in self._required_transaction_keys:
+            if key not in self.transaction:
+                raise BlockVerificationError('{} is a required attribute of the transaction'.format(key))
+        self.verify_transaction_signature()
+
+    def verify_transaction_signature(self):
+        """
+        Check that the provided signature corresponds to the public key provided
+        in the transaction.
+
+        Raises a ValueError if the signature does not match the public key.
+
+        :raises: ValueError.
+        """
+        public_key = RSA.importKey(binascii.unhexlify(self.transaction.get('public_key')))
+        verifier = PKCS1_v1_5.new(public_key)
+        transaction = self.transaction.get('transaction')
+        hash = SHA.new(self._json_str(**transaction))
+        if not verifier.verify(hash, binascii.unhexlify(self.transaction.get('signature'))):
+            raise ValueError('Provided Signature does not match public key.')
+
+
+class BlockChain(Base):
     """
     Class implementing the block chain.
     """
@@ -105,12 +144,15 @@ class BlockChain(object):
                 prev_block.verify_hash()
             except BlockVerificationError:
                 raise BlockChainVerificationError()
+
             try:
                 prev_block = self.chain[prev_block.previous_hash]
             except KeyError:
                 raise BlockChainVerificationError('Unable to find previous hash: {}'.format(prev_block.hash))
             curr_indx += 1
+
         prev_block = self.chain[prev_block.hash]
+
         if prev_block.previous_hash != self.chain_hash:
             raise BlockChainVerificationError('Block chain hash: {}, previous hash: {}'.format(
                 self.chain_hash,
