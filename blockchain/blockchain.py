@@ -38,7 +38,6 @@ class Block(Base):
         """
         super(Block, self).__init__()
         self.transaction = transaction
-        self.verify_transaction()
         self.previous_hash = previous_hash
         self.timestamp = str(datetime.timestamp(datetime.now()).as_integer_ratio()[0]).encode('utf-8')
         self.hash = self.hash_block()
@@ -92,7 +91,7 @@ class Block(Base):
         public_key = RSA.importKey(binascii.unhexlify(self.transaction.get('public_key')))
         verifier = PKCS1_v1_5.new(public_key)
         transaction = self.transaction.get('transaction')
-        hash = SHA.new(self._json_str(**transaction))
+        hash = SHA.new(self._json_str(**transaction).encode('utf-8'))
         if not verifier.verify(hash, binascii.unhexlify(self.transaction.get('signature'))):
             raise ValueError('Provided Signature does not match public key.')
 
@@ -125,6 +124,7 @@ class BlockChain(Base):
         block = self.block_factory()
         new_block = block(transaction=transaction,
                           previous_hash=self.last_block.hash)
+        new_block.verify_transaction()
         self.chain.update({new_block.hash: new_block})
 
     def block_factory(self):
