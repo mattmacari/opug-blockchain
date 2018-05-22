@@ -4,10 +4,10 @@ import json
 from datetime import datetime
 from freezegun import freeze_time
 
-from blockchain.base import (Block,
-                             BlockChain,
-                             DEFAULT_HASH,
-                             BlockVerificationError)
+from blockchain.server import (Block,
+                               BlockChain,
+                               DEFAULT_HASH,
+                               BlockVerificationError)
 
 
 @freeze_time('2006-12-03 19:25')
