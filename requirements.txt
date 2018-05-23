@@ -1,1 +1,2 @@
 cached_property==1.4.2
+pycrypto==2.6.2
