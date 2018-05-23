@@ -4,9 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+attrs = "*"
+cached-property = "*"
 
 [dev-packages]
 pytest = "*"
+freezegun = "*"
 
 [requires]
 python_version = "3.5"
