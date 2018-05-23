@@ -1,20 +1,28 @@
 import unittest
+from unittest import mock
 import hashlib
 import json
 from datetime import datetime
 from freezegun import freeze_time
 
-from blockchain.server import (Block,
-                               BlockChain,
-                               DEFAULT_HASH,
-                               BlockVerificationError)
+from blockchain.chain import (Block,
+                              BlockChain,
+                              DEFAULT_HASH,
+                              BlockVerificationError)
 
 
 @freeze_time('2006-12-03 19:25')
 class BlockTestCase(unittest.TestCase):
 
     def setUp(self):
-        self.tx = {'spam': 1, 'eggs': 2}
+        self.tx = {
+            'transacton': {
+                'spam': 1,
+                'eggs': 2
+            },
+            'public_key': None,
+            'signature': None
+        }
         self.previous_hash = hashlib.new(
             DEFAULT_HASH, 'previous_hash'.encode('utf-8')).hexdigest()
         self.timestamp = str(datetime.timestamp(datetime(year=2006,
@@ -47,6 +55,14 @@ class BlockTestCase(unittest.TestCase):
 class BlockChainTestCase(unittest.TestCase):
 
     def setUp(self):
+        self.tx = {
+            'transaction': {
+                'spam': 1,
+                'eggs': 2
+            },
+            'public_key': None,
+            'signature': None
+        }
         self.tx = {'spam': 1, 'eggs': 2}
         self.bc = BlockChain()
 
@@ -54,11 +70,13 @@ class BlockChainTestCase(unittest.TestCase):
         blk = self.bc.block_factory()
         self.assertIs(blk, Block)
 
-    def test_append(self):
+    @mock.patch('blockchain.chain.Block.verify_transaction')
+    def test_append(self, mock_verify):
         self.bc.append(self.tx)
         self.assertEqual(len(self.bc.chain), 2)
 
-    def test_last_block(self):
+    @mock.patch('blockchain.chain.Block.verify_transaction')
+    def test_last_block(self, mock_verify):
         self.bc.append(self.tx)
         self.assertEqual(self.bc.last_block.transaction,
                          self.tx)
