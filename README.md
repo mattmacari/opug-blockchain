@@ -1,6 +1,8 @@
 # opug-blockchain
 Omaha Python User Group Lightning Talk - Blockchain Building Blocks
 
+The original presentation can be found [here](http://bit.ly/2GGm0co)
+
 ## Quickstart
 
 #### Install dev environment
