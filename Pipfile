@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 attrs = "*"
 cached-property = "*"
+flask="*"
+requests = "*"
 
 [dev-packages]
 pytest = "*"

@@ -3,8 +3,7 @@ from datetime import datetime
 import json
 from collections import OrderedDict
 
-import Crypto
-import Crypto.Random
+from Crypto.Random import urandom
 from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
@@ -37,6 +36,7 @@ class Block(Base):
         :param previous_hash: the hash of the previous block
         """
         super(Block, self).__init__()
+        self.block_id = binascii.hexlify(urandom(24)).decode('utf-8')
         self.transaction = transaction
         self.previous_hash = previous_hash
         self.timestamp = str(datetime.timestamp(datetime.now()).as_integer_ratio()[0]).encode('utf-8')
@@ -95,6 +95,12 @@ class Block(Base):
         if not verifier.verify(hash, binascii.unhexlify(self.transaction.get('signature'))):
             raise ValueError('Provided Signature does not match public key.')
 
+    def to_json(self):
+        return {'transaction': self.transaction,
+                'block_id': self.block_id,
+                'hash': self.hash,
+                'previous_hash': self.previous_hash}
+
 
 class BlockChain(Base):
     """
@@ -105,13 +111,15 @@ class BlockChain(Base):
                  hash=DEFAULT_HASH,
                  block_class=Block):
         super(BlockChain, self).__init__()
+        self.chain_id = binascii.hexlify(urandom(24)).decode('utf-8')
         self.hash = hash
         self.block_class = block_class
         self.chain = OrderedDict()
         self.timestamp = str(datetime.timestamp(datetime.now()).as_integer_ratio()[0]).encode('utf-8')
         self.chain_hash = hashlib.new(hash, self.timestamp).hexdigest()
         # Add first block
-        b = self.block_factory()(transaction={}, previous_hash=self.chain_hash)
+        b = self.block_factory()(transaction={'chain_id': self.chain_id},
+                                 previous_hash=self.chain_hash)
         self.chain[b.hash] = b
 
     def __len__(self):
@@ -126,6 +134,7 @@ class BlockChain(Base):
                           previous_hash=self.last_block.hash)
         new_block.verify_transaction()
         self.chain.update({new_block.hash: new_block})
+        return new_block.block_id
 
     def block_factory(self):
         bc = self.block_class
