@@ -17,7 +17,6 @@ Omaha Python User Group Lightning Talk - Blockchain Building Blocks
     python -m unittest -v
 ```
 
-
 ## Code Example
 
 Suppose that Alice and Bob are planning a run, and  they want to keep a public record of their conversation since Bob's
