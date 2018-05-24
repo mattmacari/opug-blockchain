@@ -19,7 +19,6 @@ The original presentation can be found [here](http://bit.ly/2GGm0co)
     python -m unittest -v
 ```
 
-
 ## Code Example
 
 Suppose that Alice and Bob are planning a run, and  they want to keep a public record of their conversation since Bob's
