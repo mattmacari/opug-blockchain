@@ -20,6 +20,18 @@ The original presentation can be found [here](http://bit.ly/2GGm0co)
     python -m unittest -v
 ```
 
+#### Running local server
+```sh
+    pyenv activate blockchain
+    python ./blockchain/server.py
+```
+
+#### Running server example (while local server is running)
+```sh
+    pyenv activate blockchain
+    python ./example/server_example.py
+```
+
 ## Code Example
 
 Suppose that Alice and Bob are planning a run, and  they want to keep a public record of their conversation since Bob's
