@@ -7,6 +7,7 @@ The original presentation can be found [here](http://bit.ly/2GGm0co)
 
 #### Install dev environment
 ```sh
+    git clone git@github.com:mattmacari/opug-blockchain.git
     pyenv virtualenv blockchain
     pyenv activate blockchain
     pip install pipenv
