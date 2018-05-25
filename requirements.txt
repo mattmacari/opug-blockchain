@@ -1,2 +1,5 @@
 cached_property==1.4.2
 pycrypto==2.6.2
+flask==1.0.2
+requests==2.18.4
+freezegun==0.3.10
